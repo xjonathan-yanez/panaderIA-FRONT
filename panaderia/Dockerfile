@@ -26,7 +26,7 @@ FROM nginx:1.27-alpine-slim AS production
 EXPOSE 8080
 
 # Copiar los archivos de compilación de la etapa anterior
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /build /usr/share/nginx/html
 
 # Copiar la configuración personalizada de Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
