@@ -9,7 +9,7 @@ export const fetchProducts = async () => {
 };
 
 export const submitOrder = async (order) => {
-  const response = await fetch(`${API_URL}/pedidos`, {
+  const response = await fetch(`${API_URL}/pedido`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -19,11 +19,12 @@ const CheckoutForm = () => {
     }
 
     const order = {
-      customer,
-      items: cartItems,
-      total: cartTotal,
-      date: new Date().toISOString(),
-    };
+      items: cartItems.map(item => ({
+        producto_id: item.id,
+        cantidad: item.quantity,
+      })),
+      cliente: customer.name
+   };
 
     try {
       await submitOrder(order);

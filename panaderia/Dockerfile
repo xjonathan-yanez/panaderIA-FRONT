@@ -1,13 +1,12 @@
 # Etapa 1: Compilar la aplicación de React
 FROM node:20-alpine AS builder
 
-# Establecer el directorio de trabajo
 WORKDIR /app
 
 # Copiar package.json y package-lock.json
 COPY package*.json ./
 
-# Instalar las dependencias
+# Instalar todas las dependencias para la compilación
 RUN npm install
 
 # Copiar el resto del código de la aplicación
@@ -16,20 +15,25 @@ COPY . .
 # Compilar la aplicación para producción
 RUN npm run build
 
-# Etapa 2: Servir la aplicación con Nginx
-FROM nginx:1.27-alpine-slim AS production
+# Etapa 2: Servir la aplicación con un servidor Node.js ligero
+FROM node:20-alpine AS production
 
-# Cloud Run espera que el contenedor escuche en el puerto definido por la variable de entorno PORT
-# Nginx por defecto escucha en el puerto 80.
-# No es estrictamente necesario exponer el puerto en el Dockerfile para Cloud Run,
-# pero es una buena práctica para la documentación y el uso local.
+WORKDIR /app
+
+# Copiar solo el package.json y package-lock.json para instalar solo las dependencias de producción
+COPY package*.json ./
+
+# Instalar solo las dependencias de producción (como 'serve')
+# Esto crea una imagen más pequeña que si copiáramos node_modules de la etapa anterior
+RUN npm install --only=production
+
+# Copiar los archivos de compilación de la etapa 'builder'
+COPY --from=builder /app/build ./build
+
+# Exponer el puerto 8080. 'serve' escuchará en el puerto definido por la variable de entorno PORT,
+# que Cloud Run proporciona automáticamente. Por defecto, 'serve' usa el puerto 3000.
 EXPOSE 8080
 
-# Copiar los archivos de compilación de la etapa anterior
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# Copiar la configuración personalizada de Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Comando para iniciar Nginx en primer plano
-CMD ["nginx", "-g", "daemon off;"]
+# Comando para iniciar el servidor. Cloud Run establece la variable PORT,
+# y el paquete 'serve' la utilizará automáticamente.
+CMD [ "npm", "start" ]
