@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-const API_URL = axios.create({
-  baseURL: process.env.REACT_APP_API_URL
-});
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const fetchProducts = async () => {
   const response = await fetch(`${API_URL}/productos`);
